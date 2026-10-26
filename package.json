@@ -1,0 +1,10 @@
+{
+  "name": "dia-portfolio",
+  "private": true,
+  "scripts": {
+    "validate": "html-validate \"site/**/*.html\""
+  },
+  "devDependencies": {
+    "html-validate": "11.17.0"
+  }
+}
