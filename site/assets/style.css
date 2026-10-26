@@ -1,0 +1,30 @@
+:root {
+    --bg: #fbfaf7;
+    --surface: #f2f0ea;
+    --text: #1c1b19;
+    --muted: #5c5a54;
+    --rule: #d9d5db;
+    --accent: #1f5f5b;
+    --accent-soft: #e1ecea;
+    --todo-bg: #fff1b8;
+    --todo-text: #5a4500;
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+
+    --measure: 44rem;
+}
+
+*, *::before, *::after {box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%;}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+}
