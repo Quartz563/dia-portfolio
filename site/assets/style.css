@@ -141,6 +141,31 @@ h3 {
     color: var(--muted);
 }
 
+/*Projects List*/
+.projects {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.projects li {
+    border-top: 1px solid var(--rule);
+    padding: 1.25rem 0;
+    margin: 0;
+}
+
+.projects li:last-child {
+    border-bottom: 1px solid var(--rule);
+}
+
+.projects h3 {
+    margin: 0 0 0 0.25rem;
+    font-size: 1.125rem;
+}
+
+.projects p {
+    margin: 0.25rem 0 0.5rem;
+}
 
 .site-footer {
     margin-top: 4rem;
