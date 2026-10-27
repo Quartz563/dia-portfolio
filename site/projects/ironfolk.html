@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ironfolk Combat Website - Joseph Wijnstok</title>
+    <meta name="description" content="Case Study: Building and running a production Phoenix website.">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <a class="skip" href="#main">Skip to main content</a>
+    <header class="site-header">
+        <div class="wrap">
+            <a class="site-name" href="../index.html">Joseph Wijnstok</a>
+            <nav class="site-nav" aria-label="primary">
+                <a href="../index.html#projects">Projects</a>
+                <a href="../index.html#evidence">Evidence</a>
+                <a href="../index.html#about">About</a>
+                <a href="../index.html#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+    <main id="main" class="wrap">
+        <p class="meta">Case Study</p>
+        <h1>Ironfolk Combat Inc Website</h1>
+        <p class="lede">
+            The public website for Ironfolk Combat Inc, a Historic European Martial Arts (HEMA) club in Wellington. I
+            built and maintain
+            it, including hosting, domain configuration and security updates. It is one of the projects in active
+            production and has real users
+            depending on it.
+        </p>
+        <dl class="facts">
+            <dt>Type</dt>
+            <dd>Volunteer work for the club, in production</dd>
+            <dt>Stack</dt>
+            <dd>Elixir, Phoenix, and Ecto, server-rendered HTML, CSS, and Javascript, PostgreSQL database</dd>
+            <dt>Hosting</dt>
+            <dd>Fly.io</dd>
+            <dt>Live Site</dt>
+            <dd><a href="https://ironfolkcombat.co.nz/">IronfolkCombat.co.nz</a></dd>
+            <dt>Source Code</dt>
+            <dd><a href="https://github.com/Quartz563/ironfolk-combat">Github Link</a></dd>
+        </dl>
+        <h2>Requirements</h2>
+        <p>
+            The club had attempted three times in the past to create a website that would advertise the club, it's
+            rules, training locations and general fees.
+            In the past, these attempts would often use website makers, but would not provide the customisability that
+            the club needed. As someone experienced with
+            general development in the Phoenix framework, I offered to try my hand.
+        </p>
+        <p>
+            The general requirements for the website were the following:
+        </p>
+        <ul>
+            <li>Show off the club in a positive light</li>
+            <li>Allow for people to sign up to the club and review the rules and training times</li>
+            <li>Allow for messages and alerts to be posted to the main page of the website</li>
+        </ul>
+        <p>
+            As this was a volunteer project; no budget was allocated, and I was requested to present it at the AGM for
+            2025.
+        </p>
+        <h2>What I had Built</h2>
+        <ul>
+            <li>Full multi-page website that includes all the content about the club, including training content, FAQs
+                and contact pages</li>
+            <li>Fully interactive admin panel which shows a full breakdown of all website stats and the ability for
+                admins to create more admin accounts without my intervention</li>
+            <li>Realtime alert system where an administrator can log into the admin portal and issue an alert of varying
+                levels to be displayed on all website content</li>
+            <li>Fully integrated registration page with strict requirements to read all safety guidelines before the
+                registration will be accepted</li>
+            <li>Realtime blog system where new updates will be reflected on all connected users with no downtime</li>
+            <li>Integrated payment infrastructure through Stripe (currently disabled at the request of the charity)</li>
+            <li>Full database of all registered club members, each issued a special ID number for use with payment
+                systems</li>
+            <li>Adaptable reporting form as per the safety rules of the club, with reports being delivered to site
+                admins directly through the admin panel</li>
+        </ul>
+        <h2>Problems and how I diagnosed them</h2>
+        <h3>The site was reachable at two addresses</h3>
+        <p>
+            The site answered on both <code>www.</code> and the bare domain, serving identical content from two URLs.
+            This split
+            the search ranking between them and made the links inconsistent. Rather than relying on DNS alone, I wrote a
+            small Phoenix plug,
+            <code>CanonicalRedirect</code>, placed in the endpoint before the router. It inspects the request host and,
+            if it is not
+            the canonical one, responds with a 301 permanent redirect to the same path on the canonical host.
+        </p>
+        <pre><code>
+defmodule IronfolkCombatWeb.Plugs.CanonicalRedirect do
+  import Plug.Conn
+
+  def init(opts), do: opts
+
+  def call(%Plug.Conn{host: "www.ironfolkcombat.co.nz"} = conn, _opts) do
+    conn
+    |> put_resp_header("location", "https://ironfolkcombat.co.nz#{conn.request_path}")
+    |> send_resp(301, "")
+    |> halt()
+  end
+
+  def call(conn, _opts), do: conn
+end
+        </code></pre>
+        <h3>Paying for infrastructure nothing used</h3>
+        <p>
+            Reviewing the Fly.io account, I found a second PostgreSQL cluster that was a duplicate of the main that the
+            application
+            was not connected to. I confirmed nothing referenced the second cluster before removing it, which reduced
+            the running cost and number of services
+            exposed.
+        </p>
+        <h2>What I would change</h2>
+        <ul>
+            <li>Add a way for officers of the charity to edit content on the website without a full deploy</li>
+            <li>Automate deploys to Fly from the main branch, as this portfolio does</li>
+            <li>Reimplement the full Dark Mode system to a switchable state</li>
+        </ul>
+        <a class="back" href="../index.html#projects">← All projects</a>
+    </main>
+    <footer class="site-footer">
+        <div class="wrap">
+            <p>Joseph Wijnstok</p>
+        </div>
+    </footer>
+</body>
+
+</html>
