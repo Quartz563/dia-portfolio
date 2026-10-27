@@ -44,6 +44,63 @@
             <dt>Source Code</dt>
             <dd><a href="https://github.com/Quartz563/ironfolk-combat">Github Link</a></dd>
         </dl>
+        <h2>Requirements</h2>
+        <p>
+            The club had attempted three times in the past to create a website that would advertise the club, it's
+            rules, training locations and general fees.
+            In the past, these attempts would often use website makers, but would not provide the customisability that
+            the club needed. As someone experienced with
+            general development in the Phoenix framework, I offered to try my hand.
+        </p>
+        <p>
+            The general requirements for the website were the following:
+        <ul>
+            <li>Show off the club in a positive light</li>
+            <li>Allow for people to sign up to the club and review the rules and training times</li>
+            <li>Allow for messages and alerts to be posted to the main page of the website</li>
+        </ul>
+        As this was a volunteer project; no budget was allocated, and I was requested to present it at the AGM for 2025.
+        </p>
+        <h2>What I had Built</h2>
+        <h2>Problems and how I diagnosed them</h2>
+        <h3>The site was reachable at two addresses</h3>
+        <p>
+            The site answered on both <code>www.</code> and the bare domain, serving identical content from two URLs.
+            This split
+            the search ranking between them and made the links inconsistent. Rather than relying on DNS alone, I wrote a
+            small Phoenix plug,
+            <code>CanonicalRedirect</code>, placed in the endpoint before the router. It inspects the request host and,
+            if it is not
+            the canonical one, responds with a 301 permanent redirect to the same path on the canonical host.
+        </p>
+        <pre><code>
+defmodule IronfolkCombatWeb.Plugs.CanonicalRedirect do
+  import Plug.Conn
+
+  def init(opts), do: opts
+
+  def call(%Plug.Conn{host: "www.ironfolkcombat.co.nz"} = conn, _opts) do
+    conn
+    |> put_resp_header("location", "https://ironfolkcombat.co.nz#{conn.request_path}")
+    |> send_resp(301, "")
+    |> halt()
+  end
+
+  def call(conn, _opts), do: conn
+end
+        </code></pre>
+        <h3>Paying for infrastructure nothing used</h3>
+        <p>
+            Reviewing the Fly.io account, I found a second PostgreSQL cluster that was a duplicate of the main that the
+            application
+            was not connected to. I confirmed nothing referenced the second cluster before removing it, which reduced
+            the running cost and number of services
+            exposed.
+        </p>
+        <h2>What I would change</h2>
+        <p>
+            
+        </p>
         <a class="back" href="../index.html#projects">← All projects</a>
     </main>
     <footer class="site-footer">
