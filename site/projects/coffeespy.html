@@ -14,7 +14,7 @@
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
         <div class="wrap">
-            <a class="site-name">Joseph Wijnstok</a>
+            <a class="site-name" href="../index.html">Joseph Wijnstok</a>
             <nav class="site-nav" aria-label="Primary">
                 <a href="../index.html#projects">Projects</a>
                 <a href="../index.html#evidence">Evidence</a>
@@ -26,6 +26,91 @@
     <main id="main" class="wrap">
         <p class="meta">Case Study</p>
         <h1>CoffeeSpy</h1>
+        <p class="lede">
+            A crowdsourced coffee price tracker for Wellington cafes, modelled on the petrol price app Gaspy. Users
+            report what a coffee costs at a cafe, and other users confirm or dispute the report.
+        </p>
+        <dl class="facts">
+            <dt>Type</dt>
+            <dd>Solo project, built to learn API design and mobile development</dd>
+            <dt>Client</dt>
+            <dd>Flutter (Dart), targeting Android and iOS</dd>
+            <dt>Server</dt>
+            <dd>Elixir / Phoenix, JSON API only</dd>
+            <dt>Data</dt>
+            <dd>PostgreSQL through Ecto, run in Docker</dd>
+            <dt>Auth</dt>
+            <dd>JWT (Guardian), passwords hashed with PBKDF2</dd>
+            <dt>Source</dt>
+            <dd>SOURCE HERE</dd>
+        </dl>
+        <h2>Architecture</h2>
+        <p>
+            The client and server are separate application that share nothing but the API contract. The Phoenix
+            application exposes JSON endpoints and holds all the business rules; the Flutter client holds the
+            presentation state only.
+        </p>
+        <pre><code>Flutter client                       Phoenix API                 PostgreSQL
+  AuthService  ── POST /api/login ─▶  AuthController   ── Ecto ──▶  users
+  ApiService   ── GET  /api/... ───▶  PriceReport      ── Ecto ──▶  cafes
+               ◀── { "data": ... } ──  controllers                  price_reports
+  (JWT in secure storage, sent as a Bearer header)                  confirmations</code></pre>
+        <p class="meta">
+            Table names indicative
+        </p>
+        <h2>What it does</h2>
+        <ul>
+            <li>Registration and Login, issuing a signed token the client stores in the platform's secure storage</li>
+            <li>A multi-step form for submitting a price report against a cafe</li>
+            <li>Confirmation of other users' reports, so a price gains credibility as more people corroborate it</li>
+            <li>A profile screen listing the user's own reports, with a guest state for users who are not signed in</li>
+            <li>Light and Dark themes, implemented with a custom Flutter <code>ThemeExtension</code></li>
+        </ul>
+        <h2>Decisions</h2>
+        <div class="decision">
+            <h3>Business rules are enforced on the server</h3>
+            <p>
+                A user should not be able to confirm their own report. Hiding the button in the app is not sufficient,
+                because anyone holding a valid token can call the API directly. The check is made in the server before a
+                confirmation is sent to the database; the client's job is only to avoid offering an action that will be
+                refused.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Stateless Tokens</h3>
+            <p>
+                Tokens are signed JWTs with no server-side session table. This keeps the server simple and horizontally
+                scalable. This cost is that a token cannot be revoked before it expires; for an app of this sensitivity
+                that is acceptable, but it would not be for one handling personal records.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Shaping responses for the client</h3>
+            <p>
+                The profile screen lists reports alongside the cafe each was made at. returning only a cafe ID would
+                force the client to make one further request per report, which would cause delays when scaled. The
+                server instead includes the cafe name in the report payload, so the screen loads with a single request.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>PBKDF2 over bcrypt</h3>
+            <p>
+                The usual Elixir bcrypt library depends on a native C extension, which proved unreliable to compile on
+                my Windows
+                development machine. <code>pbkdf2_elixir</code> is implemented in Elixir and is an accepted
+                password-hashing
+                function, so I used it instead.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Separating authentication from data access in the client</h3>
+            <p>
+                Token handling lives in an <code>AuthService</code>; requests for application data go through an
+                <code>ApiService</code>. Screens depend on these services rather than making HTTP calls themselves, so
+                the
+                network layer can be changed or mocked in one place.
+            </p>
+        </div>
         <a class="back" href="../index.html#projects">← All projects</a>
     </main>
     <footer class="site-footer">
