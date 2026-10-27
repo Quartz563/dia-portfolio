@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CoffeeSpy - Joseph Wijnstok</title>
+    <meta name="description"
+        content="Case Study: Flutter mobile application with Phoenix JSON API, PostgreSQL and JWT Authentication.">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+        <div class="wrap">
+            <a class="site-name" href="../index.html">Joseph Wijnstok</a>
+            <nav class="site-nav" aria-label="Primary">
+                <a href="../index.html#projects">Projects</a>
+                <a href="../index.html#evidence">Evidence</a>
+                <a href="../index.html#about">About</a>
+                <a href="../index.html#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+    <main id="main" class="wrap">
+        <p class="meta">Case Study</p>
+        <h1>CoffeeSpy</h1>
+        <p class="lede">
+            A crowdsourced coffee price tracker for Wellington cafes, modelled on the petrol price app Gaspy. Users
+            report what a coffee costs at a cafe, and other users confirm or dispute the report.
+        </p>
+        <dl class="facts">
+            <dt>Type</dt>
+            <dd>Solo project, built to learn API design and mobile development</dd>
+            <dt>Client</dt>
+            <dd>Flutter (Dart), targeting Android and iOS</dd>
+            <dt>Server</dt>
+            <dd>Elixir / Phoenix, JSON API only</dd>
+            <dt>Data</dt>
+            <dd>PostgreSQL through Ecto, run in Docker</dd>
+            <dt>Auth</dt>
+            <dd>JWT (Guardian), passwords hashed with PBKDF2</dd>
+            <dt>Source</dt>
+            <dd><a href="https://github.com/Quartz563/coffeespy">Github Link</a></dd>
+        </dl>
+        <h2>Architecture</h2>
+        <p>
+            The client and server are separate application that share nothing but the API contract. The Phoenix
+            application exposes JSON endpoints and holds all the business rules; the Flutter client holds the
+            presentation state only.
+        </p>
+        <pre><code>Flutter client                       Phoenix API                 PostgreSQL
+  AuthService  ── POST /api/login ─▶  AuthController   ── Ecto ──▶  users
+  ApiService   ── GET  /api/... ───▶  PriceReport      ── Ecto ──▶  cafes
+               ◀── { "data": ... } ──  controllers                  price_reports
+  (JWT in secure storage, sent as a Bearer header)                  confirmations</code></pre>
+        <p class="meta">
+            Table names indicative
+        </p>
+        <h2>What it does</h2>
+        <ul>
+            <li>Registration and Login, issuing a signed token the client stores in the platform's secure storage</li>
+            <li>A multi-step form for submitting a price report against a cafe</li>
+            <li>Confirmation of other users' reports, so a price gains credibility as more people corroborate it</li>
+            <li>A profile screen listing the user's own reports, with a guest state for users who are not signed in</li>
+            <li>Light and Dark themes, implemented with a custom Flutter <code>ThemeExtension</code></li>
+        </ul>
+        <h2>Decisions</h2>
+        <div class="decision">
+            <h3>Business rules are enforced on the server</h3>
+            <p>
+                A user should not be able to confirm their own report. Hiding the button in the app is not sufficient,
+                because anyone holding a valid token can call the API directly. The check is made in the server before a
+                confirmation is sent to the database; the client's job is only to avoid offering an action that will be
+                refused.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Stateless Tokens</h3>
+            <p>
+                Tokens are signed JWTs with no server-side session table. This keeps the server simple and horizontally
+                scalable. This cost is that a token cannot be revoked before it expires; for an app of this sensitivity
+                that is acceptable, but it would not be for one handling personal records.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Shaping responses for the client</h3>
+            <p>
+                The profile screen lists reports alongside the cafe each was made at. returning only a cafe ID would
+                force the client to make one further request per report, which would cause delays when scaled. The
+                server instead includes the cafe name in the report payload, so the screen loads with a single request.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>PBKDF2 over bcrypt</h3>
+            <p>
+                The usual Elixir bcrypt library depends on a native C extension, which proved unreliable to compile on
+                my Windows
+                development machine. <code>pbkdf2_elixir</code> is implemented in Elixir and is an accepted
+                password-hashing
+                function, so I used it instead.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Separating authentication from data access in the client</h3>
+            <p>
+                Token handling lives in an <code>AuthService</code>; requests for application data go through an
+                <code>ApiService</code>. Screens depend on these services rather than making HTTP calls themselves, so
+                the
+                network layer can be changed or mocked in one place.
+            </p>
+        </div>
+        <h2>Problems and how I diagnosed them</h2>
+        <h3>The app could not reach the server from a phone</h3>
+        <p>
+            Requests worked in the emulator and failed on a physical device. On the phone, <code>localhost</code> refers
+            to the phone itself, so the client was configured with the development machine's LAN address instead.
+            Android then rejected the requests because it blocks unencrypted HTTP by default; I allowed cleartext
+            traffic in a development-only network configuration rather than across the app.
+        </p>
+        <h3>Responses parsed as empty</h3>
+        <p>
+            Phoenix's generated JSON views wrap every payload in a <code>data</code> envelope. The client was decoding
+            the
+            top-level object as the resource. The fix was to unwrap <code>data</code> in one place in
+            <code>ApiService</code>
+            rather than in each screen.
+        </p>
+        <h3>Migrations ran in the wrong order</h3>
+        <p>
+            After I renamed a migration file by hand, Ecto ran it before a migration it depended on, because order is
+            taken from the timestamp in the filename. I restored generator-assigned timestamps rather than editing them.
+        </p>
+        <h3>Two latent bugs found during review</h3>
+        <p>
+            While building the profile screen I found a context function being called without its required
+            <code>user_id</code> argument, and a preload of <code>:cafes</code> on a schema that declares
+            <code>belongs_to :cafe</code>. Neither path had been exercised yet, which is the case for tests.
+        </p>
+        <h2>What I would change</h2>
+        <ul>
+            <li>Add ExUnit tests for the confirmation rules and controller responses before adding features.</li>
+            <li>Short-lived access tokens with refresh tokens, so a compromised token stops working without a
+                server-side session table for every request.</li>
+            <li>Complete the deferred password-reset flow and settings screen.</li>
+        </ul>
+        <a class="back" href="../index.html#projects">← All projects</a>
+    </main>
+    <footer class="site-footer">
+        <div class="wrap">
+            <p>Joseph Wijnstok</p>
+        </div>
+    </footer>
+</body>
+
+</html>

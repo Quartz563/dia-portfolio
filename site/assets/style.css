@@ -245,6 +245,28 @@ pre code {
     margin: 0;
 }
 
+@media (max-width: 30rem) {
+    .facts {
+        grid-template-columns: 1fr;
+    }
+
+    .facts dd {
+        margin-bottom: 0.5rem;
+    }
+}
+
+.decision {
+    margin: 1.25rem 0;
+}
+
+.decision h3 {
+    margin-bottom: 0.25rem;
+}
+
+.decision p {
+    margin: 0.25rem 0;
+}
+
 .back {
     font-family: var(--sans);
     font-size: 0.9375rem;
