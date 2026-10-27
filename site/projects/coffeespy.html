@@ -42,7 +42,7 @@
             <dt>Auth</dt>
             <dd>JWT (Guardian), passwords hashed with PBKDF2</dd>
             <dt>Source</dt>
-            <dd>SOURCE HERE</dd>
+            <dd><a href="https://github.com/Quartz563/coffeespy">Github Link</a></dd>
         </dl>
         <h2>Architecture</h2>
         <p>
@@ -111,6 +111,40 @@
                 network layer can be changed or mocked in one place.
             </p>
         </div>
+        <h2>Problems and how I diagnosed them</h2>
+        <h3>The app could not reach the server from a phone</h3>
+        <p>
+            Requests worked in the emulator and failed on a physical device. On the phone, <code>localhost</code> refers
+            to the phone itself, so the client was configured with the development machine's LAN address instead.
+            Android then rejected the requests because it blocks unencrypted HTTP by default; I allowed cleartext
+            traffic in a development-only network configuration rather than across the app.
+        </p>
+        <h3>Responses parsed as empty</h3>
+        <p>
+            Phoenix's generated JSON views wrap every payload in a <code>data</code> envelope. The client was decoding
+            the
+            top-level object as the resource. The fix was to unwrap <code>data</code> in one place in
+            <code>ApiService</code>
+            rather than in each screen.
+        </p>
+        <h3>Migrations ran in the wrong order</h3>
+        <p>
+            After I renamed a migration file by hand, Ecto ran it before a migration it depended on, because order is
+            taken from the timestamp in the filename. I restored generator-assigned timestamps rather than editing them.
+        </p>
+        <h3>Two latent bugs found during review</h3>
+        <p>
+            While building the profile screen I found a context function being called without its required
+            <code>user_id</code> argument, and a preload of <code>:cafes</code> on a schema that declares
+            <code>belongs_to :cafe</code>. Neither path had been exercised yet, which is the case for tests.
+        </p>
+        <h2>What I would change</h2>
+        <ul>
+            <li>Add ExUnit tests for the confirmation rules and controller responses before adding features.</li>
+            <li>Short-lived access tokens with refresh tokens, so a compromised token stops working without a
+                server-side session table for every request.</li>
+            <li>Complete the deferred password-reset flow and settings screen.</li>
+        </ul>
         <a class="back" href="../index.html#projects">← All projects</a>
     </main>
     <footer class="site-footer">
