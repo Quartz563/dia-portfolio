@@ -36,17 +36,17 @@
             <dt>Type</dt>
             <dd>Volunteer work for the club, in production</dd>
             <dt>Stack</dt>
-            <dd>Elixir, Phoenix, and Ecto, server-rendered HTML, CSS, and Javascript, PostgreSQL database</dd>
+            <dd>Elixir, Phoenix, and Ecto, server-rendered HTML, CSS, and JavaScript, PostgreSQL database</dd>
             <dt>Hosting</dt>
             <dd>Fly.io</dd>
             <dt>Live Site</dt>
             <dd><a href="https://ironfolkcombat.co.nz/">IronfolkCombat.co.nz</a></dd>
             <dt>Source Code</dt>
-            <dd><a href="https://github.com/Quartz563/ironfolk-combat">Github Link</a></dd>
+            <dd><a href="https://github.com/Quartz563/ironfolk-combat">GitHub Link</a></dd>
         </dl>
         <h2>Requirements</h2>
         <p>
-            The club had attempted three times in the past to create a website that would advertise the club, it's
+            The club had attempted three times in the past to create a website that would advertise the club, its
             rules, training locations and general fees.
             In the past, these attempts would often use website makers, but would not provide the customisability that
             the club needed. As someone experienced with
@@ -64,7 +64,7 @@
             As this was a volunteer project; no budget was allocated, and I was requested to present it at the AGM for
             2025.
         </p>
-        <h2>What I had Built</h2>
+        <h2>What I Built</h2>
         <ul>
             <li>Full multi-page website that includes all the content about the club, including training content, FAQs
                 and contact pages</li>
@@ -81,6 +81,25 @@
             <li>Adaptable reporting form as per the safety rules of the club, with reports being delivered to site
                 admins directly through the admin panel</li>
         </ul>
+        <h2>Privacy concerns in respect to the Privacy Act 2020</h2>
+        <p>
+            The registration form collects three main pieces of information: a member's name, their contact details, and
+            an emergency contact. Nothing else is collected by the registration form, and member records are only
+            visible to the administrators. The passwords for the admins are hashed, and the whole site is served over
+            HTTPS. While Stripe integration was built into the site, their card details never touch our servers. The
+            functionality for payment is also disabled for now.
+        </p>
+        <p>
+            The application and database are hosted on Fly.io in it's Sydney region. While Fly.io stores the data on
+            behalf of the club, we remain responsible for it under the Privacy Act of 2020.
+        </p>
+        <p>
+            Two main gaps in our compliance remain, which I am discussing with the club leadership team with. Firstly,
+            the registration form does not tell people why the information is collected or who can see it, which the
+            transparency principle of the act requires. Second, records of members are not automatically deleted from
+            the site once they leave, instead this information has to be manually removed by an admin once we receive
+            notice.
+        </p>
         <h2>Problems and how I diagnosed them</h2>
         <h3>The site was reachable at two addresses</h3>
         <p>
@@ -121,6 +140,10 @@ end
             <li>Add a way for officers of the charity to edit content on the website without a full deploy</li>
             <li>Automate deploys to Fly from the main branch, as this portfolio does</li>
             <li>Reimplement the full Dark Mode system to a switchable state</li>
+            <li>Add in message at the end of the registration form that says why the information is collected and who
+                sees it</li>
+            <li>Add in a member-side request for information removal once they confirm they wish to leave the club, or
+                request their information is removed for whatever reason.</li>
         </ul>
         <a class="back" href="../index.html#projects">← All projects</a>
     </main>
