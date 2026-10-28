@@ -42,11 +42,11 @@
             <dt>Auth</dt>
             <dd>JWT (Guardian), passwords hashed with PBKDF2</dd>
             <dt>Source</dt>
-            <dd><a href="https://github.com/Quartz563/coffeespy">Github Link</a></dd>
+            <dd><a href="https://github.com/Quartz563/coffeespy">GitHub Link</a></dd>
         </dl>
         <h2>Architecture</h2>
         <p>
-            The client and server are separate application that share nothing but the API contract. The Phoenix
+            The client and server are separate applications that share nothing but the API contract. The Phoenix
             application exposes JSON endpoints and holds all the business rules; the Flutter client holds the
             presentation state only.
         </p>
@@ -80,14 +80,14 @@
             <h3>Stateless Tokens</h3>
             <p>
                 Tokens are signed JWTs with no server-side session table. This keeps the server simple and horizontally
-                scalable. This cost is that a token cannot be revoked before it expires; for an app of this sensitivity
+                scalable. The cost is that a token cannot be revoked before it expires; for an app of this sensitivity
                 that is acceptable, but it would not be for one handling personal records.
             </p>
         </div>
         <div class="decision">
             <h3>Shaping responses for the client</h3>
             <p>
-                The profile screen lists reports alongside the cafe each was made at. returning only a cafe ID would
+                The profile screen lists reports alongside the cafe each was made at. Returning only a cafe ID would
                 force the client to make one further request per report, which would cause delays when scaled. The
                 server instead includes the cafe name in the report payload, so the screen loads with a single request.
             </p>
