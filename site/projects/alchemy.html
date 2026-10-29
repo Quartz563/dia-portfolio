@@ -24,6 +24,106 @@
         </div>
     </header>
     <main id="main" class="wrap">
+        <p class="meta">Case Study</p>
+        <h1>Alchemy Server Plugin</h1>
+        <p>
+            A Minecraft server plugin that adds an immersive alchemy system: players build structures such as a cauldron
+            or workbench, break items down into eight elements with their own rules and relationships, process them
+            according to those rules, and brew potions which is scored against a recipe. This is my largest java
+            project, and this page is about how it is structured rather than what it does in game.
+        </p>
+        <dl class="facts">
+            <dt>Type</dt>
+            <dd>Personal project</dd>
+            <dt>Language</dt>
+            <dd>Java 17, Paper server API, Foundation library</dd>
+            <dt>Data</dt>
+            <dd>SQLite, seeded from a bundled SQL script; YAML for administrator overrides</dd>
+            <dt>Build</dt>
+            <dd>Maven, JUnit 5, GitHub Actions</dd>
+            <dt>Source</dt>
+            <dd><a href="https://github.com/Quartz563/Alchemy-Plugin">GitHub Link</a></dd>
+        </dl>
+        <h2>Design</h2>
+        <div class="decision">
+            <h3>Structures are described by data rather than hardcoded detection</h3>
+            <p>
+                A Structure, which for the purposes of the plugin is a collection of blocks arranged in a specific way,
+                is a <code>StructureDefinition</code> record which holds the following: the block which activates the
+                structure, a set of blocks at positions relative to the activation block, the materials each position
+                accepts, and a factory that creates the structure. A single <code>StructureDetector</code> check any
+                definition against the world. The Cauldron, for example, is a water cauldron with fire beneath it.
+            </p>
+            <p>
+                Adding a new structure means writing one new definition and one new controller. The detection code does
+                not change, so it can remain as a flexible piece of infrastructure for other structures.
+            </p>
+            <pre><code>new StructureDefinition(
+    "alchemy:alchemic_cauldron",
+    "Alchemic Cauldron",
+    Material.WATER_CAULDRON,
+    Set.of(new StructureBlock(
+        new RelativeCoordinate(0, -1, 0),
+        Set.of(Material.FIRE, Material.SOUL_FIRE))),
+    AlchemicalCauldron::new);</code></pre>
+        </div>
+        <div class="decision">
+            <h3>Shared behaviour using Polymorphism</h3>
+            <p>
+                Every structure implements a <code>IStructure</code> interface, which provides the validation, naming
+                and state lookup as default methods. An implementation such as <code>Alchemical Cauldron</code> only
+                supplies its location, definition and, if it has one, state object. The constructor reference in the
+                definition acts as the object factory.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Registries</h3>
+            <p>
+                <code>StructureRegistry</code> index definitions by their activation material, so when a player
+                interacts with a block only the definitions that could apply to that block are checked, which is
+                enforced using Java Streams. It also maps every block a structure occupies back to the structure, so
+                interacting with any part of it finds the whole. Material Representations and Recipes have their own
+                registries of their own.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Elements and Representations</h3>
+            <p>
+                The eight elements are an enumerable in which each element knows it's opposite, and the elemnents it can
+                combine with according to its own internal logic rules, which allow rules such as
+                <code>isHarmonicWith</code> to sit with the data they use. An item's elemental make up is an
+                <code>AlchemicalRepresentation</code> record built through a builder that rejects non-positive
+                quantities and merges duplicate elements.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Transformations as a closed set of operations</h3>
+            <p>
+                Processing an item changes the quantity of each element in it. Each kind of change is a record
+                implementing the sealed interface <code>ElementOperation</code>: strip, scale, shift, add flat amount,
+                or leave unchanged, Because the interface is sealed, the set of operations is fixed and the compiler can
+                know every possible case.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Data layer</h3>
+            <p>
+                The base elemental values for each material are stored in SQLite and seeded from a SQL script
+                shipped inside the plugin, designed to act as the default values for everything in the system. The
+                database records its schema version and rebuilds itself when the
+                version changes. Server administrators can override individual values in YAML without touching the
+                database.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>Events and Commands</h3>
+            <p>
+                Structures raise their own <code>StructureInteractEvent</code> and <code>StructureDestroyEvent</code>,
+                so the code that reacts to a structure being used or destroyed is decoupled from the code that detects
+                it. Commands also hook into their own event system, however this is provided by the library used to
+                assist in development of this project.
+            </p>
+        </div>
         <a class="back" href="../index.html#projects">← All projects</a>
     </main>
     <footer class="site-footer">
