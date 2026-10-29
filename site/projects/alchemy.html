@@ -124,6 +124,29 @@
                 assist in development of this project.
             </p>
         </div>
+        <h2>Tests</h2>
+        <p>
+            The brew scorer, the element operations and the temperature states have unit tests, which run in GitHub
+            Actions on every push. The scorer tests express each expected score as a sum of its weights, so a reader
+            can see which part of a brew lost marks.
+        </p>
+        <p>
+            Much of the rest of the plugin is harder to test. The <code>Element</code> enum reads its display names
+            from the plugin's configuration when it loads, so any code that touches an element needs a running server.
+            Separating the element rules from their display names is the change that would make the core logic
+            testable.
+        </p>
+        <h2>What I would change</h2>
+        <ul>
+            <li>Separate <code>Element</code> from the configuration, as above.</li>
+            <li>Remove static state from the registries. <code>StructureRegistry</code> is entirely static and
+                <code>RepresentationRegistry</code> keeps a static map behind an instance constructor, which makes
+                both hard to test and to reason about.
+            </li>
+            <li>Make <code>AlchemicalRepresentation</code> fully immutable by copying its map in the record's
+                constructor, not only in the builder.</li>
+            <li>Stop blocking on the asynchronous database load during startup.</li>
+        </ul>
         <a class="back" href="../index.html#projects">← All projects</a>
     </main>
     <footer class="site-footer">
