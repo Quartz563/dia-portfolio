@@ -59,7 +59,6 @@
                 there is usually
                 more than one route between two nodes and the algorithms have a choice to make.</li>
         </ol>
-
         <h2>Pathfinding</h2>
         <div class="decision">
             <h3>Dijkstra's algorithm</h3>
@@ -78,8 +77,59 @@
                 remaining cost, which turned out to matter.
             </p>
         </div>
+        <h2>Making it testable</h2>
+        <p>
+            The project had no tests and could not easily be given any. Two changes made that possible:
+        </p>
+        <ul>
+            <li>
+                The pathfinding code lived inside the Swing window class, so testing it meant creating a window. I
+                moved both algorithms into a separate <code>Pathfinder</code> class that takes a list of nodes and
+                knows nothing about the interface.
+            </li>
+            <li>
+                Generation used its own sources of randomness, including <code>SecureRandom</code> for values that
+                fed into the hash codes used to seed later steps, so no two runs produced the same graph. The
+                generator now takes a <code>Random</code> as a constructor argument. Passing a seeded instance gives
+                the same graph every time, so a failing test can be reproduced exactly.
+            </li>
+        </ul>
 
-        
+        <h2>Tests</h2>
+        <p>
+            There are two kinds of test. The first builds small graphs by hand where the correct answer is known,
+            such as a route of several cheap edges that should be preferred over one expensive direct edge, a path
+            from a node to itself, and a node that cannot be reached. Each of these is a parameterised test that runs
+            against both algorithms, so the results show Dijkstra and A* side by side.
+        </p>
+        <p>
+            The second kind checks a property over many generated graphs: for 200 seeded graphs, A* must find a path
+            of the same total cost as Dijkstra. Hand-written examples only cover the cases I thought of; this test
+            covers cases I did not. This test will fail occasionally, and this is due to my relative inexperience with
+            the pathfinding algorithms to diagnose the issue.
+        </p>
+
+        <h2>What the tests found</h2>
+        <div class="decision">
+            <h3>The same connection had two different weights</h3>
+            <p>
+                Each connection is stored once in each direction, and each direction was given its own random weight.
+                Travelling from A to B could therefore cost a different amount from travelling B to A, and the label
+                drawn on the edge showed only one of the two. Every generated graph was affected. The fix was to
+                choose one weight per pair of nodes and use it for both directions.
+            </p>
+        </div>
+
+        <h2>What I would change</h2>
+        <ul>
+            <li>Run the tests in GitHub Actions on every push, as my other projects do.</li>
+            <li>Move the test classes into the same package as the code they test.</li>
+            <li>Reject invalid node ids with a clear error. A negative start id currently causes an
+                <code>ArrayIndexOutOfBoundsException</code> inside the algorithm.
+            </li>
+            <li>Count the nodes each algorithm explores and show it in the interface, to make the difference between
+                them visible.</li>
+        </ul>
         <a class="back" href="../index.html#projects">← All projects</a>
     </main>
     <footer class="site-footer">
