@@ -24,6 +24,62 @@
         </div>
     </header>
     <main id="main" class="wrap">
+        <p class="meta">Case Study</p>
+        <h1>Graph Visualiser</h1>
+        <p class="lede">
+            A Java desktop application that generates random connected weighted graphs and uses two pathfinding
+            algorithms to locate the shortest path. This project was written to understand how the two algorithms
+            differ, and Maven was added later to accommodate the unit tests using the JUnit suite which found two bugs
+            in how the connections formed.
+        </p>
+        <dl class="facts">
+            <dt>Type</dt>
+            <dd>Personal project</dd>
+            <dt>Language</dt>
+            <dd>Java 25, Swing for the interface</dd>
+            <dt>Build</dt>
+            <dd>Maven, JUnit 5</dd>
+            <dt>Source</dt>
+            <dd><a href="https://github.com/Quartz563/graph-visualiser">GitHub Link</a></dd>
+        </dl>
+        <h2>Generating a connected graph</h2>
+        <p>
+            A randomly generated graph is only useful for pathfinding if every node can be reached. Rather than
+            generating edges at random and checking connectivity afterwards, the generator builds the graph one node
+            at a time so that it is connected at every step:
+        </p>
+        <ol>
+            <li>Each new node is joined to a randomly chosen node already in the graph. This forced connection
+                guarantees that the graph stays connected.</li>
+            <li>The new node is then offered a connection to every other node in the graph. The chance of each
+                connection starts at 90% and falls by 10 percentage points for every connection the two nodes
+                already have, to a minimum of 10%. This spreads connections across the graph instead of letting a
+                few nodes become hubs.</li>
+            <li>A final pass gives any node with fewer than two connections another one to another random node, so that
+                there is usually
+                more than one route between two nodes and the algorithms have a choice to make.</li>
+        </ol>
+
+        <h2>Pathfinding</h2>
+        <div class="decision">
+            <h3>Dijkstra's algorithm</h3>
+            <p>
+                Dijkstra's algorithm expands nodes in order of their distance from the start, using a priority queue,
+                and records each node's predecessor so the path can be rebuilt once the destination is reached. It
+                always finds the cheapest path, but explores in every direction.
+            </p>
+        </div>
+        <div class="decision">
+            <h3>A* search</h3>
+            <p>
+                A* orders the queue by distance travelled plus an estimate of the distance remaining, using the
+                straight-line distance between nodes as the estimate. This steers the search towards the destination
+                and explores fewer nodes. It only finds the cheapest path if the estimate never exceeds the real
+                remaining cost, which turned out to matter.
+            </p>
+        </div>
+
+        
         <a class="back" href="../index.html#projects">← All projects</a>
     </main>
     <footer class="site-footer">
